@@ -1,0 +1,7 @@
+{
+	"name": "2048",
+	"version": "0.0.1",
+	"description": "2048. A popular game",
+	"main": "main.js",
+	"author": "lkathous"
+}
