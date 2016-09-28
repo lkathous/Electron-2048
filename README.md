@@ -17,4 +17,20 @@
 	"author": "lkathous"
 }
 ```
-### main.js窗口配置
+
+### main.js窗口配置（部分）
+```JavaScript
+mainWindow = new BrowserWindow({
+	frame: false,
+	width: 420,
+	height: 620,
+	resizable: false,
+	transparent: true,
+
+	autoHideMenuBar: true
+})
+```
+
+### 外观设计
+基本上模拟2048App的外观
+![https://github.com/lkathous/Electron-2048/img/样式.png](https://github.com/lkathous/Electron-2048/img/样式.png)
