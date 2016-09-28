@@ -33,4 +33,4 @@ mainWindow = new BrowserWindow({
 
 ### 外观设计
 基本上模拟2048App的外观
-![https://github.com/lkathous/Electron-2048/tree/master/img/样式.png](https://github.com/lkathous/Electron-2048/tree/master/img/样式.png)
+![https://github.com/lkathous/Electron-2048/tree/master/img/样式.png](https://github.com/lkathous/Electron-2048/tree/master/img/样式.png?raw=true)
