@@ -8,14 +8,16 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
+	<title>2048</title>
 	<link rel="stylesheet" href="css/font-awesome.min.css">
 	<link rel="stylesheet" href="css/animate.min.css">
 	<link rel="stylesheet" href="css/app.css">
-	<title>2048</title>
+	<style media="screen">
+
+	</style>
 </head>
 <body>
 
-	<!-- TODO -->
 	<div class="container">
 		<div class="toolbar">
 			lk`
@@ -37,38 +39,22 @@
 					历史最高成绩
 					<p>27652</p>
 				</div>
+				<button type="button" name="start" onclick="start()">开始游戏</button>
+				<button type="button" name="reset" onclick="test()">清空成绩</button>
 				<h3 class="">
 					你的新挑战是获得 4096 方块！
 				</h3>
 			</div>
+			<div class="gamepanel-bg"></div>
 			<div class="gamepanel">
-				<div class="cell n-2">2</div>
-				<div class="cell n-4">4</div>
-				<div class="cell n-8">8</div>
-				<div class="cell n-16">16</div>
-				<div class="cell n-32">32</div>
-				<div class="cell n-64">64</div>
-				<div class="cell n-128">128</div>
-				<div class="cell n-256">256</div>
-				<div class="cell n-512">512</div>
-				<div class="cell n-1024">1024</div>
-				<div class="cell n-2048">2048</div>
-				<div class="cell n-4096">4096</div>
-				<div class="cell n-8192">8192</div>
-				<div class="cell n-16384">16384</div>
-				<div class="cell"></div>
-				<div class="cell"></div>
+				<div class="cell n-2" x="1" y="1">2</div>
+				<div class="cell n-16384" x="2" y="1">16384</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Insert this line above script imports  -->
-	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-
-	<script src="js/jquery-1.11.3.min.js"></script>
+	<script src="js/2048.js"></script>
 	<script src="js/app.js"></script>
 
-	<!-- Insert this line after script imports -->
-	<script>if (window.module) module = window.module;</script>
 </body>
 </html>
