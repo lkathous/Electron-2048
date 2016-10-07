@@ -1,24 +1,16 @@
 console.log("app.js..");
 
-let ipcRenderer
+let ipcRenderer = {}
 try {
   ipcRenderer = require('electron').ipcRenderer
-} catch (e) {
-  ipcRenderer = {}
-}
+} catch (e) {}
 
-let doAnimate = (cell, classN) => {
-  classN = " " + classN
-  cell.className = cell.className + classN
-  setTimeout(() => {
-    cell.className = cell.className.replace(classN, "")
-  }, 500)
-}
+let viewActuator = new ViewActuator(4, document)
+let game = new GameManager(viewActuator)
+game.start()
 
-let game = new Game()
-game.initializeGame()
 
-// 用户操作接口
+// 用户操作
 let closeWindow = () => {
   console.log('closeWindow')
   ipcRenderer.send('close-window')
@@ -31,7 +23,7 @@ let minimizeWindow = () => {
 
 let start = () => {
   console.log('start')
-  game.initializeGame()
+  game.start()
 }
 
 let test = () => {
@@ -49,19 +41,23 @@ document.onkeydown = (e) => {
   switch(code) {
     case 38:
     case 87:
-      dirction = "↑"
+      // dirction = "↑"
+      dirction = 0
       break;
     case 40:
     case 83:
-      dirction = "↓"
+      // dirction = "↓"
+      dirction = 1
       break;
     case 37:
     case 65:
-      dirction = "←"
+      // dirction = "←"
+      dirction = 2
       break;
     case 39:
     case 68:
-      dirction = "→"
+      // dirction = "→"
+      dirction = 3
       break;
   }
   if (dirction === "") return

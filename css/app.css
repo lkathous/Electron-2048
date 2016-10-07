@@ -76,7 +76,7 @@ button:active {
   position: relative;
   height: 170px
 }
-.baseinfo .point, .baseinfo .high {
+.baseinfo .score, .baseinfo .best {
   position: absolute;
   top: 0;
   height: 70px;
@@ -88,10 +88,10 @@ button:active {
   background-color: #bbada0;
   border-radius: 5px;
 }
-.baseinfo .point {
+.baseinfo .score {
   left: 136px;
 }
-.baseinfo .high {
+.baseinfo .best {
   right: 0;
   font-size: 14px;
 }
@@ -132,7 +132,7 @@ button:active {
 /* 布局结束 */
 
 /* 方块样式 */
-[class^="cell"] {
+[class^="tile"] {
   display: inline-block;
   height: 72px;
   width: 72px;
@@ -146,14 +146,14 @@ button:active {
   overflow:hidden;
 }
 
-div.cell-goal {
+div.tile-goal {
   height: 120px;
   width: 120px;
   font-size: 34px;
   line-height: 120px;
 }
 
-.gamepanel [class^="cell"], .gamepanel-bg [class^="cell"] {
+.gamepanel [class^="tile"], .gamepanel-bg [class^="tile"] {
   -webkit-app-region: no-drag;
   margin: 6.5px;
 }
@@ -212,7 +212,7 @@ div.cell-goal {
 /* 方块样式结束 */
 
 /* 方块位置 */
-.cell[x][y] {
-  transition: all .3s ease;
+.tile[x][y] {
+  transition: all .2s ease;
   position: absolute;
 }
