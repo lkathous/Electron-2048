@@ -3,6 +3,13 @@ class AI {
   constructor(gameManager) {
     this.game = gameManager
     this.depth = 3
+
+    this.vectors = {
+      0: {x: 0, y: -1},
+      1: {x: 0, y: 1},
+      2: {x: -1, y: 0},
+      3: {x: 1, y: 0}
+    }
   }
 
   getBest() {
@@ -44,7 +51,7 @@ class AI {
             let tile = newMatrix[y][x]
             if (!tile) {
               newMatrix[y][x] = value
-              let {score: resScore} = this.search(false, this.clone(newMatrix), baseScore, depth - 1, alpha, beta)
+              let {score: resScore} = this.search(true, this.clone(newMatrix), baseScore, depth - 1, alpha, beta)
               if (resScore > bestScore) {
                 bestScore = resScore
               }
@@ -66,15 +73,15 @@ class AI {
     let start = 0
     let add = 1
     if (dirction === 1 || dirction === 3) {
-      start = this.size - 1
+      start = matrix.length - 1
       add = -1
     }
 
-    for (let y = start, i = 0; i < this.size; y += add, i++) {
-      for (let x = start, j = 0; j < this.size; x += add, j++) {
+    for (let y = start, i = 0; i < matrix.length; y += add, i++) {
+      for (let x = start, j = 0; j < matrix.length; x += add, j++) {
         let value = matrix[y][x]
         if (value) {
-          let {_x, _y} = this.getObjective(x, y, value, dirction)
+          let {_x, _y} = this.getObjective(x, y, value, dirction, matrix)
           if (_x === x && _y === y) continue
 
           let _value = matrix[_y][_x]
@@ -99,13 +106,13 @@ class AI {
     return {score, notMove, win}
   }
 
-  getObjective(x, y, value, dirction) {
+  getObjective(x, y, value, dirction, matrix) {
     let {x: dire_x, y: dire_y} = this.vectors[dirction]
     let _x = dire_x + x
     let _y = dire_y + y
     let _value
     try {
-      _value = this.matrix[_y][_x]
+      _value = matrix[_y][_x]
     } catch (e) {
       return {_x: x, _y: y}
     }
