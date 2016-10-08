@@ -9,6 +9,8 @@ let viewActuator = new ViewActuator(4, document)
 let game = new GameManager(viewActuator)
 game.start()
 
+let ai = new AI(game)
+
 
 // 用户操作
 let closeWindow = () => {

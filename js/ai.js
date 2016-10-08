@@ -6,37 +6,53 @@ class AI {
   }
 
   getBest() {
-    return this.search(true, clone(this.game.matrix), this.depth, -10000, 10000)
+    return this.search(true, this.clone(this.game.matrix), 0, this.depth, -10000, 10000)
   }
 
   // TODO
-  search(playerTurn, matrix, depth, alpha, beta) {
+  search(playerTurn, matrix, baseScore, depth, alpha, beta) {
     let bestScore = 0
     let bestMove = -1
 
     // the maxing player
     if (playerTurn) {
-      bestScore = alpha
+      // bestScore = alpha
       for (let direction in [0, 1, 2, 3]) {
-        let newMatrix = clone(matrix)
+        let newMatrix = this.clone(matrix)
 
         let {score, notMove, win} = this.slide(direction, newMatrix)
         if (notMove) continue
 
         if (depth == 0) {
-          result = { score }
+          return { score }
         } else {
-          let {score} = this.search(false, clone(matrix), depth - 1, bestScore, beta)
-          if (score > bestScore) {
-            bestScore = score
+          let {score: resScore} = this.search(false, this.clone(newMatrix), score + baseScore, depth - 1, alpha, beta)
+          if (resScore > bestScore) {
+            bestScore = resScore
             bestMove = direction
           }
         }
-
-        return {direction: bestMove, score: bestScore}
       }
+      return {direction: bestMove, score: bestScore}
+
     } else {
-      bestScore = beta
+      // bestScore = beta
+      for (let value in [2, 4]) {
+        for (var y = 0; y < matrix.length; y++) {
+          for (var x = 0; x < matrix.length; x++) {
+            let newMatrix = this.clone(matrix)
+            let tile = newMatrix[y][x]
+            if (!tile) {
+              newMatrix[y][x] = value
+              let {score: resScore} = this.search(false, this.clone(newMatrix), baseScore, depth - 1, alpha, beta)
+              if (resScore > bestScore) {
+                bestScore = resScore
+              }
+            }
+          }
+        }
+      }
+      return {score: bestScore}
     }
 
   }
