@@ -2,7 +2,8 @@
 class AI {
   constructor(gameManager) {
     this.game = gameManager
-    this.depth = 3
+    this.depth = 0
+    this.minSearchTime = 100
 
     this.vectors = {
       0: {x: 0, y: -1},
@@ -13,53 +14,75 @@ class AI {
   }
 
   getBest() {
-    return this.search(true, this.clone(this.game.matrix), 0, this.depth, -10000, 10000)
+    let start = (new Date()).getTime()
+    let depth = this.depth
+    let best
+
+    do {
+      let newBest = this.search(true, this.game.matrix, 0, depth, -10000, 10000)
+      if (newBest.move == -1) {
+        break
+      } else {
+        best = newBest
+      }
+      depth++
+
+      console.log(((new Date()).getTime() - start) / 1000);
+    // } while ( (new Date()).getTime() - start < this.minSearchTime)
+    } while (false)
+
+    return best
   }
 
   // TODO
-  search(playerTurn, matrix, bestScore, depth, alpha, beta) {
-    let bestMove = -1
-    let newMatrix = this.clone(matrix)
+  search(playerTurn, matrix, baseScore, depth, alpha, beta) {
+    let move = []
+    let bestScore = baseScore
+    let result = {}
 
     // the maxing player
     if (playerTurn) {
-      // bestScore = alpha
+      // baseScore = alpha
       for (let direction in [0, 1, 2, 3]) {
+        let newMatrix = this.clone(matrix)
         let {score, notMove, lose} = this.slide(direction, newMatrix)
-        if (notMove, lose) continue
+        if (notMove || lose) continue
 
         if (depth == 0) {
-          return { score }
+          result.score = score
         } else {
-          let {score: resScore} = this.search(false, newMatrix, score + bestScore, depth - 1, alpha, beta)
-          if (resScore > bestScore) {
-            bestScore = resScore
-            bestMove = direction
-          }
+          let {score: resScore} = this.search(false, newMatrix, score + baseScore, depth - 1, alpha, beta)
+          result.score = resScore
+        }
+        if (result.score >= bestScore) {
+          if (result.score > bestScore)
+            move = []
+          bestScore = result.score
+          move.push(direction)
         }
       }
-      return {direction: bestMove, score: bestScore}
-
     } else {
-      // bestScore = beta
+      // baseScore = beta
       for (let value in [2, 4]) {
         value = [2, 4][value]
         for (var y = 0; y < matrix.length; y++) {
           for (var x = 0; x < matrix.length; x++) {
+            let newMatrix = this.clone(matrix)
             let tile = newMatrix[y][x]
-            if (!tile) {
-              newMatrix[y][x] = value
-              let {score: resScore} = this.search(true, newMatrix, bestScore, depth - 1, alpha, beta)
-              if (resScore > bestScore) {
-                bestScore = resScore
-              }
+            if (tile) continue
+
+            newMatrix[y][x] = value
+            let {score: resScore} = this.search(true, newMatrix, baseScore, depth, alpha, beta)
+            if (result.score > bestScore) {
+              bestScore = result.score
             }
           }
         }
       }
-      return {score: bestScore}
     }
 
+    let bestMove = move[parseInt(Math.random() * move.length)]
+    return {direction: bestMove, score: bestScore}
   }
 
   slide(dirction, matrix) {

@@ -32,6 +32,22 @@ let test = () => {
   game.reset()
 }
 
+let isAiOpen = false
+let aigo = () => {
+  isAiOpen = true
+  let move = ai.getBest()
+  game.slide(move.direction)
+
+  if (!isAiOpen || !game.isStart) return
+  setTimeout(() => {
+    aigo()
+  }, 300)
+}
+
+let aistop = () => {
+  isAiOpen = false
+}
+
 document.onkeydown = (e) => {
   if (event.ctrlKey && event.altKey) {
     shortKey(e.keyCode)
@@ -39,31 +55,31 @@ document.onkeydown = (e) => {
   }
 
   var code = window.event ? e.keyCode : e.which
-  let dirction = "";
+  let direction = "";
   switch(code) {
     case 38:
     case 87:
-      // dirction = "↑"
-      dirction = 0
+      // direction = "↑"
+      direction = 0
       break;
     case 40:
     case 83:
-      // dirction = "↓"
-      dirction = 1
+      // direction = "↓"
+      direction = 1
       break;
     case 37:
     case 65:
-      // dirction = "←"
-      dirction = 2
+      // direction = "←"
+      direction = 2
       break;
     case 39:
     case 68:
-      // dirction = "→"
-      dirction = 3
+      // direction = "→"
+      direction = 3
       break;
   }
-  if (dirction === "") return
-  game.slide(dirction)
+  if (direction === "") return
+  game.slide(direction)
 }
 
 // 模拟操作部分
