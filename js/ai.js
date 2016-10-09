@@ -17,23 +17,21 @@ class AI {
   }
 
   // TODO
-  search(playerTurn, matrix, baseScore, depth, alpha, beta) {
-    let bestScore = 0
+  search(playerTurn, matrix, bestScore, depth, alpha, beta) {
     let bestMove = -1
+    let newMatrix = this.clone(matrix)
 
     // the maxing player
     if (playerTurn) {
       // bestScore = alpha
       for (let direction in [0, 1, 2, 3]) {
-        let newMatrix = this.clone(matrix)
-
-        let {score, notMove, win} = this.slide(direction, newMatrix)
-        if (notMove) continue
+        let {score, notMove, lose} = this.slide(direction, newMatrix)
+        if (notMove, lose) continue
 
         if (depth == 0) {
           return { score }
         } else {
-          let {score: resScore} = this.search(false, this.clone(newMatrix), score + baseScore, depth - 1, alpha, beta)
+          let {score: resScore} = this.search(false, newMatrix, score + bestScore, depth - 1, alpha, beta)
           if (resScore > bestScore) {
             bestScore = resScore
             bestMove = direction
@@ -45,13 +43,13 @@ class AI {
     } else {
       // bestScore = beta
       for (let value in [2, 4]) {
+        value = [2, 4][value]
         for (var y = 0; y < matrix.length; y++) {
           for (var x = 0; x < matrix.length; x++) {
-            let newMatrix = this.clone(matrix)
             let tile = newMatrix[y][x]
             if (!tile) {
               newMatrix[y][x] = value
-              let {score: resScore} = this.search(true, this.clone(newMatrix), baseScore, depth - 1, alpha, beta)
+              let {score: resScore} = this.search(true, newMatrix, bestScore, depth - 1, alpha, beta)
               if (resScore > bestScore) {
                 bestScore = resScore
               }
@@ -67,12 +65,12 @@ class AI {
   slide(dirction, matrix) {
     let score = 0
     let notMove = false
-    let win = false
+    let lose = false
 
     let oldMatrixSeri = JSON.stringify(matrix)
     let start = 0
     let add = 1
-    if (dirction === 1 || dirction === 3) {
+    if (dirction == 1 || dirction == 3) {
       start = matrix.length - 1
       add = -1
     }
@@ -101,9 +99,9 @@ class AI {
     }
 
     if (matrixSeri.indexOf("null") === -1 && this.checkLose()) {
-       win = true
+       lose = true
     }
-    return {score, notMove, win}
+    return {score, notMove, lose}
   }
 
   getObjective(x, y, value, dirction, matrix) {
@@ -118,7 +116,7 @@ class AI {
     }
 
     if (!_value) {
-      if (_value === null) return this.getObjective(_x, _y, value, dirction)
+      if (_value === null) return this.getObjective(_x, _y, value, dirction, matrix)
       return {_x: x, _y: y}
     }
     if (_value === value) {
@@ -126,6 +124,25 @@ class AI {
     } else {
       return {_x: x, _y: y}
     }
+  }
+
+  checkLose() {
+    for (var y = 0; y < this.size; y++) {
+      for (var x = 0; x < this.size; x++) {
+        let self = this.matrix[y][x]
+
+        try {
+          let right = this.matrix[y][x + 1]
+          if (self === right) return false
+        } catch (e) {}
+
+        try {
+          let down = this.matrix[y + 1][x]
+          if (self === down) return false
+        } catch (e) {}
+      }
+    }
+    return true
   }
 
   clone(obj) {
