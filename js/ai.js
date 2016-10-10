@@ -3,7 +3,7 @@ class AI {
   constructor(gameManager) {
     this.game = gameManager
     this.depth = 0
-    this.minSearchTime = 100
+    this.minSearchTime = 400
 
     this.vectors = {
       0: {x: 0, y: -1},
@@ -27,9 +27,9 @@ class AI {
       }
       depth++
 
-      console.log(((new Date()).getTime() - start) / 1000);
-    // } while ( (new Date()).getTime() - start < this.minSearchTime)
-    } while (false)
+      console.log("思考耗时：" + ((new Date()).getTime() - start) + "毫秒 最高得分：" + best.score);
+    } while ( (new Date()).getTime() - start < this.minSearchTime)
+    // } while (false)
 
     return best
   }
@@ -37,8 +37,7 @@ class AI {
   // TODO
   search(playerTurn, matrix, baseScore, depth, alpha, beta) {
     let move = []
-    let bestScore = baseScore
-    let result = {}
+    let bestScore = 0
 
     // the maxing player
     if (playerTurn) {
@@ -48,6 +47,7 @@ class AI {
         let {score, notMove, lose} = this.slide(direction, newMatrix)
         if (notMove || lose) continue
 
+        let result = {}
         if (depth == 0) {
           result.score = score
         } else {
@@ -73,8 +73,8 @@ class AI {
 
             newMatrix[y][x] = value
             let {score: resScore} = this.search(true, newMatrix, baseScore, depth, alpha, beta)
-            if (result.score > bestScore) {
-              bestScore = result.score
+            if (resScore > bestScore) {
+              bestScore = resScore
             }
           }
         }
@@ -82,7 +82,7 @@ class AI {
     }
 
     let bestMove = move[parseInt(Math.random() * move.length)]
-    return {direction: bestMove, score: bestScore}
+    return {direction: bestMove, score: bestScore + baseScore}
   }
 
   slide(dirction, matrix) {

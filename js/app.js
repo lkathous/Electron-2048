@@ -34,7 +34,6 @@ let test = () => {
 
 let isAiOpen = false
 let aigo = () => {
-  isAiOpen = true
   let move = ai.getBest()
   game.slide(move.direction)
 
@@ -42,6 +41,11 @@ let aigo = () => {
   setTimeout(() => {
     aigo()
   }, 300)
+}
+
+let aistart = () => {
+  isAiOpen = true
+  aigo()
 }
 
 let aistop = () => {
