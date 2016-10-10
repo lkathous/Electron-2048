@@ -1,8 +1,8 @@
 // 栅格模型
 class GridModel {
-  constructor(size, matrix) {
+  constructor(size) {
+    this.matrix = []
     this.size = size || 4
-    this.matrix = matrix || []
 
     this.bastScore = 0
     this.score = 0
@@ -56,6 +56,7 @@ class GridModel {
     let oldMatrixSeri = JSON.stringify(this.matrix)
     let start = 0
     let add = 1
+    let exception = []
 
     if (dirction === 1 || dirction === 3) {
       start = this.size - 1
@@ -67,7 +68,7 @@ class GridModel {
         let value = this.matrix[y][x]
 
         if (value) {
-          let {_x, _y} = this.getObjective(x, y, value, dirction)
+          let {_x, _y} = this.getObjective(x, y, value, dirction, exception)
           if (_x === x && _y === y) continue
 
           let _value = this.matrix[_y][_x]
@@ -76,6 +77,7 @@ class GridModel {
             value = _value * 2
             this.score += value
             if (this.score > this.bastScore) this.bastScore = this.score
+            exception.push(this.xyToIndex(_x, _y))
           }
           this.matrix[_y][_x] = value
 
@@ -88,12 +90,13 @@ class GridModel {
     if (oldMatrixSeri !== matrixSeri) {
       this.createTile()
       matrixSeri = JSON.stringify(this.matrix)
+      // this.debug()
+      return true
     }
-
-    this.debug()
+    return false
   }
 
-  getObjective(x, y, value, dirction) {
+  getObjective(x, y, value, dirction, exception) {
     let {x: dire_x, y: dire_y} = this.vectors[dirction]
     let _x = dire_x + x
     let _y = dire_y + y
@@ -105,10 +108,10 @@ class GridModel {
     }
 
     if (!_value) {
-      if (_value === null) return this.getObjective(_x, _y, value, dirction)
+      if (_value === null) return this.getObjective(_x, _y, value, dirction, exception)
       return {_x: x, _y: y}
     }
-    if (_value === value) {
+    if (_value === value && exception.indexOf(this.xyToIndex(_x, _y)) == -1) {
       return {_x, _y}
     } else {
       return {_x: x, _y: y}
@@ -150,6 +153,13 @@ class GridModel {
     return {x, y}
   }
 
+  clone() {
+    let g = new GridModel(this.size)
+    g.matrix = JSON.parse(JSON.stringify(this.matrix))
+    g.score = this.score
+    return g
+  }
+
   debug() {
     let arr = []
     for (var y = 0; y < this.size; y++) {
@@ -180,6 +190,6 @@ class GridModel {
     console.log(`|${arr[i++]}|${arr[i++]}|${arr[i++]}|${arr[i++]}|`)
     console.log(`|${arr[i++]}|${arr[i++]}|${arr[i++]}|${arr[i++]}|`)
     console.log(`|${arr[i++]}|${arr[i++]}|${arr[i++]}|${arr[i++]}|`)
-    console.log(`_____________________________`)
+    console.log(`ˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉˉ`)
   }
 }

@@ -40,7 +40,7 @@ let aigo = () => {
   if (!isAiOpen || !game.isStart) return
   setTimeout(() => {
     aigo()
-  }, 300)
+  }, 500)
 }
 
 let aistart = () => {
