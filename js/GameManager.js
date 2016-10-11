@@ -34,9 +34,13 @@ class GameManager {
     this.pushScore()
 
     if (this.grid.checkLose()) {
-      this.isStart = false
-      setTimeout(() => alert("挑战失败~，请重新挑战！"), 300)
+      this.lose()
     }
+  }
+
+  lose() {
+    this.isStart = false
+    setTimeout(() => alert("挑战失败~，请重新挑战！"), 300)
   }
 
   reset() {

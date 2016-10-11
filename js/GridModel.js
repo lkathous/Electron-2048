@@ -58,7 +58,7 @@ class GridModel {
     let add = 1
     let exception = []
 
-    if (dirction === 1 || dirction === 3) {
+    if (dirction == 1 || dirction == 3) {
       start = this.size - 1
       add = -1
     }
@@ -68,20 +68,26 @@ class GridModel {
         let value = this.matrix[y][x]
 
         if (value) {
-          let {_x, _y} = this.getObjective(x, y, value, dirction, exception)
-          if (_x === x && _y === y) continue
+          let {position, next} = this.findPosition(x, y, value, dirction, exception)
+          if (position.x === x && position.y === y) continue
 
-          let _value = this.matrix[_y][_x]
           this.matrix[y][x] = null
+          let _value
+          if (next) {
+            _value = this.matrix[next.y][next.x]
+            position.x = next.x
+            position.y = next.y//TODO 坏了
+          }
+
           if (_value) {
             value = _value * 2
             this.score += value
             if (this.score > this.bastScore) this.bastScore = this.score
-            exception.push(this.xyToIndex(_x, _y))
+            exception.push(this.xyToIndex(position.x, position.y))
           }
-          this.matrix[_y][_x] = value
+          this.matrix[position.y][position.x] = value
 
-          if (moveFn) moveFn(x, y, _x, _y, value)
+          if (moveFn) moveFn(x, y, position.x, position.y, value)
         }
       }
     }
@@ -96,26 +102,25 @@ class GridModel {
     return false
   }
 
-  getObjective(x, y, value, dirction, exception) {
+  findPosition(x, y, value, dirction, exception) {
     let {x: dire_x, y: dire_y} = this.vectors[dirction]
     let _x = dire_x + x
     let _y = dire_y + y
     let _value
     try {
       _value = this.matrix[_y][_x]
-    } catch (e) {
-      return {_x: x, _y: y}
+    } catch (e) {}
+
+    if (_value) {
+      return {
+        position: {x, y},
+        next: {x: _x, y: _y}
+      }
+    } else {
+      if (_value === null) return this.findPosition(_x, _y, value, dirction, exception)
     }
 
-    if (!_value) {
-      if (_value === null) return this.getObjective(_x, _y, value, dirction, exception)
-      return {_x: x, _y: y}
-    }
-    if (_value === value && exception.indexOf(this.xyToIndex(_x, _y)) == -1) {
-      return {_x, _y}
-    } else {
-      return {_x: x, _y: y}
-    }
+    return {position: {x, y}}
   }
 
   checkLose() {

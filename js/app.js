@@ -32,26 +32,6 @@ let test = () => {
   game.reset()
 }
 
-let isAiOpen = false
-let aigo = () => {
-  let move = ai.getBest()
-  game.slide(move.direction)
-
-  if (!isAiOpen || !game.isStart) return
-  setTimeout(() => {
-    aigo()
-  }, 500)
-}
-
-let aistart = () => {
-  isAiOpen = true
-  aigo()
-}
-
-let aistop = () => {
-  isAiOpen = false
-}
-
 document.onkeydown = (e) => {
   if (event.ctrlKey && event.altKey) {
     shortKey(e.keyCode)

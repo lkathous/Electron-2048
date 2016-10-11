@@ -1,40 +1,67 @@
 // 游戏控制器
 class AI {
   constructor(gameManager) {
+    this.game = gameManager
     this.grid = gameManager.grid
-    this.depth = 2
-    this.minSearchTime = 400
+    this.depth = 1
+    this.minSearchTime = 50
+    this.run = false
 
     this.vectors = {
-      0: {x: 0, y: -1},
-      1: {x: 0, y: 1},
-      2: {x: -1, y: 0},
-      3: {x: 1, y: 0}
+      0: {x: 0, y: -1}, // up
+      1: {x: 0, y: 1}, // down
+      2: {x: -1, y: 0}, // left
+      3: {x: 1, y: 0} // right
     }
+    this.dirc = {
+      "-1": "X",
+      0: "↑",
+      1: "↓",
+      2: "←",
+      3: "→"
+    }
+  }
+
+  start() {
+    this.run = true
+    this.execute()
+  }
+
+  stop() {
+    this.run = false
+  }
+
+  execute() {
+    let move = ai.getBest()
+    if (!move.direction || move.direction == -1) this.game.lose()
+    this.game.slide(move.direction)
+    this.grid.debug()
+
+    if (!this.run || !this.game.isStart) return
+    setTimeout(() => {
+      this.execute()
+    }, 300)
   }
 
   getBest() {
     let start = (new Date()).getTime()
     let depth = this.depth
     let best
+    let space
 
     do {
       let newBest = this.search(true, this.grid, depth, -10000, 10000)
-      if (newBest.move == -1) {
-        break
-      } else {
-        best = newBest
-      }
+      best = newBest
       depth++
+      space = (new Date()).getTime() - start
+      console.log(space);
+    } while (space < this.minSearchTime)
+    // } while (false)
 
-      console.log("思考耗时：" + ((new Date()).getTime() - start) + "毫秒 最高得分：" + best.score);
-    // } while ( (new Date()).getTime() - start < this.minSearchTime)
-    } while (false)
-
+    console.log(`思考深度：${depth}，思考耗时：${space} 毫秒，方向：${this.dirc[best.direction]}，最高得分：${best.score}`);
     return best
   }
 
-  // TODO
   search(playerTurn, grid, depth, alpha, beta) {
     let move = []
     let bestScore = 0
@@ -89,7 +116,29 @@ class AI {
     return {direction: bestMove, score: bestScore}
   }
 
-  clone(obj) {
-    return JSON.parse(JSON.stringify(obj))
+  /* 得分算法 */
+  smoothness(matrix) {
+    let smoothness = 0
+    let size = matrix.length
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (matrix[x][y]) {
+          let value = Math.log(matrix[x][y]) / Math.log(2)
+          for (let direction in [3, 1]) {
+            direction = [3, 1][direction]
+            let vector = vectors[direction]
+            let targetCell = this.findFarthestPosition(this.indexes[x][y], vector).next;
+
+            if (this.cellOccupied(targetCell)) {
+              let target = this.cellContent(targetCell);
+              let targetValue = Math.log(target.value) / Math.log(2);
+              smoothness -= Math.abs(value - targetValue);
+            }
+          }
+        }
+      }
+    }
+    return smoothness;
   }
+
 }
