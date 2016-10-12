@@ -68,18 +68,21 @@ class GridModel {
         let value = this.matrix[y][x]
 
         if (value) {
-          let {position, next} = this.findPosition(x, y, value, dirction, exception)
-          if (position.x === x && position.y === y) continue
+          let {position, next} = this.findPosition(x, y, dirction, exception)
+          if (position.x === x && position.y === y)
+            if (!next || this.matrix[next.y][next.x] != value)
+              continue
 
           this.matrix[y][x] = null
           let _value
           if (next) {
             _value = this.matrix[next.y][next.x]
-            position.x = next.x
-            position.y = next.y//TODO 坏了
           }
 
-          if (_value) {
+          if (_value && _value == value) {
+            position.x = next.x
+            position.y = next.y
+
             value = _value * 2
             this.score += value
             if (this.score > this.bastScore) this.bastScore = this.score
@@ -102,7 +105,7 @@ class GridModel {
     return false
   }
 
-  findPosition(x, y, value, dirction, exception) {
+  findPosition(x, y, dirction, exception) {
     let {x: dire_x, y: dire_y} = this.vectors[dirction]
     let _x = dire_x + x
     let _y = dire_y + y
@@ -117,7 +120,7 @@ class GridModel {
         next: {x: _x, y: _y}
       }
     } else {
-      if (_value === null) return this.findPosition(_x, _y, value, dirction, exception)
+      if (_value === null) return this.findPosition(_x, _y, dirction, exception)
     }
 
     return {position: {x, y}}

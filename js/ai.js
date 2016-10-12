@@ -96,8 +96,8 @@ class AI {
       let size = grid.size
       for (let value in [2, 4]) {
         value = [2, 4][value]
-        for (var y = 0; y < size; y++) {
-          for (var x = 0; x < size; x++) {
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
             let newGrid = grid.clone()
             let tile = newGrid.matrix[y][x]
             if (tile) continue
@@ -122,16 +122,15 @@ class AI {
     let size = matrix.length
     for (let x = 0; x < size; x++) {
       for (let y = 0; y < size; y++) {
-        if (matrix[x][y]) {
+        if (matrix[y][x]) {
           let value = Math.log(matrix[x][y]) / Math.log(2)
           for (let direction in [3, 1]) {
             direction = [3, 1][direction]
             let vector = vectors[direction]
-            let targetCell = this.findFarthestPosition(this.indexes[x][y], vector).next;
+            let target = this.grid.findPosition(x, y, vector, []).next
 
-            if (this.cellOccupied(targetCell)) {
-              let target = this.cellContent(targetCell);
-              let targetValue = Math.log(target.value) / Math.log(2);
+            if (target) {
+              let targetValue = Math.log(target) / Math.log(2);
               smoothness -= Math.abs(value - targetValue);
             }
           }
@@ -139,6 +138,28 @@ class AI {
       }
     }
     return smoothness;
+  }
+
+  monotonicity() {
+    let totals = [0, 0, 0, 0]
+
+    // up/down direction
+    for (let x = 0; x < 4; x++) {
+      let current = 0
+      let next = current+1
+      while ( next < 4 ) {
+        while ( next < 4 && !this.cellOccupied(this.indexes[x][next])) next++
+        if (next >= 4) next--
+        let currentValue = this.cellOccupied({x: x, y: current}) ? Math.log(this.cellContent( this.indexes[x][current] ).value) / Math.log(2) : 0
+        let nextValue = this.cellOccupied({x: x, y: next}) ? Math.log(this.cellContent( this.indexes[x][next] ).value) / Math.log(2) : 0
+        if (currentValue > nextValue) {
+          totals[0] += nextValue - currentValue
+        } else if (nextValue > currentValue) {
+          totals[1] += currentValue - nextValue
+        }
+        current = next
+        next++
+      }
   }
 
 }
