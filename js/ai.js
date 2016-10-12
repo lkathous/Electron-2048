@@ -140,18 +140,20 @@ class AI {
     return smoothness;
   }
 
-  monotonicity() {
+  monotonicity(matrix) {
     let totals = [0, 0, 0, 0]
 
     // up/down direction
     for (let x = 0; x < 4; x++) {
       let current = 0
-      let next = current+1
-      while ( next < 4 ) {
-        while ( next < 4 && !this.cellOccupied(this.indexes[x][next])) next++
-        if (next >= 4) next--
-        let currentValue = this.cellOccupied({x: x, y: current}) ? Math.log(this.cellContent( this.indexes[x][current] ).value) / Math.log(2) : 0
-        let nextValue = this.cellOccupied({x: x, y: next}) ? Math.log(this.cellContent( this.indexes[x][next] ).value) / Math.log(2) : 0
+      let next = current + 1
+      while (next < 4) {
+        while (next < 4 && !matrix[next][x]) {
+          next++
+        }
+        if (next>=4) next--
+        let currentValue = matrix[current, x] ? Math.log(matrix[current, x]) / Math.log(2) : 0
+        let nextValue = matrix[next, x] ? Math.log(matrix[next, x]) / Math.log(2) : 0
         if (currentValue > nextValue) {
           totals[0] += nextValue - currentValue
         } else if (nextValue > currentValue) {
@@ -160,6 +162,60 @@ class AI {
         current = next
         next++
       }
+    }
+
+    // left/right direction
+    for (let y = 0; y < 4; y++) {
+      let current = 0
+      let next = current + 1
+      while (next < 4) {
+        while (next < 4 && !matrix[y][next]) {
+          next++;
+        }
+        if (next>=4) next--
+        let currentValue = matrix[y, current] ? Math.log(matrix[y, current]) / Math.log(2) : 0;
+        let nextValue = matrix[y, next] ? Math.log(matrix[y, next]) / Math.log(2) : 0;
+        if (currentValue > nextValue) {
+          totals[2] += nextValue - currentValue;
+        } else if (nextValue > currentValue) {
+          totals[3] += currentValue - nextValue;
+        }
+        current = next;
+        next++;
+      }
+    }
+
+    return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3]);
+  }
+
+  maxValue(matrix) {
+    let size = matrix.length
+    let max = 0
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (matrix[y][x]) {
+          if (matrix[y][x] > max) {
+            max = matrix[y][x]
+          }
+        }
+      }
+    }
+
+    return Math.log(max) / Math.log(2)
+  }
+
+  available(matrix) {
+    let size = matrix.length
+    let num = 0
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (!matrix[y][x]) {
+          num++
+        }
+      }
+    }
+
+    return num
   }
 
 }

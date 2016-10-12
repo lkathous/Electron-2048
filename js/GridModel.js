@@ -68,29 +68,10 @@ class GridModel {
         let value = this.matrix[y][x]
 
         if (value) {
-          let {position, next} = this.findPosition(x, y, dirction, exception)
-          if (position.x === x && position.y === y)
-            if (!next || this.matrix[next.y][next.x] != value)
-              continue
-
-          this.matrix[y][x] = null
-          let _value
-          if (next) {
-            _value = this.matrix[next.y][next.x]
-          }
-
-          if (_value && _value == value) {
-            position.x = next.x
-            position.y = next.y
-
-            value = _value * 2
-            this.score += value
-            if (this.score > this.bastScore) this.bastScore = this.score
-            exception.push(this.xyToIndex(position.x, position.y))
-          }
-          this.matrix[position.y][position.x] = value
-
-          if (moveFn) moveFn(x, y, position.x, position.y, value)
+          let target = this.findPosition(x, y, dirction)
+          let {position, value: _value} = this.move(x, y, value, target, exception)
+          if (!_value) continue
+          if (moveFn) moveFn(x, y, position.x, position.y, _value)
         }
       }
     }
@@ -105,7 +86,7 @@ class GridModel {
     return false
   }
 
-  findPosition(x, y, dirction, exception) {
+  findPosition(x, y, dirction) {
     let {x: dire_x, y: dire_y} = this.vectors[dirction]
     let _x = dire_x + x
     let _y = dire_y + y
@@ -120,10 +101,38 @@ class GridModel {
         next: {x: _x, y: _y}
       }
     } else {
-      if (_value === null) return this.findPosition(_x, _y, dirction, exception)
+      if (_value === null) return this.findPosition(_x, _y, dirction)
     }
 
     return {position: {x, y}}
+  }
+
+  move(x, y, target, exception) {
+    let value = this.matrix[y][x]
+    let {position, next} = target
+
+    if (position.x === x && position.y === y)
+      if (!next || this.matrix[next.y][next.x] != value)
+        return {}
+
+    this.matrix[y][x] = null
+    let _value
+    if (next && exception.indexOf(this.xyToIndex(next.x, next.y)) == -1) {
+      _value = this.matrix[next.y][next.x]
+    }
+
+    if (_value && _value == value) {
+      position.x = next.x
+      position.y = next.y
+
+      value = _value * 2
+      this.score += value
+      if (this.score > this.bastScore) this.bastScore = this.score
+      exception.push(this.xyToIndex(position.x, position.y))
+    }
+    this.matrix[position.y][position.x] = value
+
+    return {position, value}
   }
 
   checkLose() {
