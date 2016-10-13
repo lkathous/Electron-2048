@@ -55,7 +55,7 @@ class AI {
       depth++
       space = (new Date()).getTime() - start
       console.log(space);
-    } while (space < this.minSearchTime)
+    } while (space < this.minSearchTime && this.maxValue(this.grid.matrix) >= 128)
     // } while (false)
 
     console.log(`思考深度：${depth}，思考耗时：${space} 毫秒，方向：${this.dirc[best.direction]}，最高得分：${best.score}`);
@@ -73,8 +73,8 @@ class AI {
     return this.smoothness(matrix) * smoothWeight
          + this.monotonicity(matrix) * mono2Weight
          + Math.log(emptyCells) * emptyWeight
-         + this.maxValue(matrix) * maxWeight
-  };
+         + Math.log(this.maxValue(matrix)) / Math.log(2) * maxWeight
+  }
 
   search(playerTurn, grid, depth, alpha, beta) {
     let move = []
@@ -82,18 +82,18 @@ class AI {
 
     // the maxing player
     if (playerTurn) {
-      bestScore = alpha
+      // bestScore = alpha
       for (let direction in [0, 1, 2, 3]) {
         let newGrid = grid.clone()
 
-        let moved = newGrid.slide(direction)
+        let moved = newGrid.doSlide(direction)
 
-        // let {score, notMove, lose} = this.slide(direction, newMatrix)
         if (!moved || newGrid.checkLose()) continue
 
         let resScore
         if (depth == 0) {
-          resScore = this.eval(grid.matrix)
+          // resScore = this.eval(grid.matrix)
+          resScore = grid.score
         } else {
           let result = this.search(false, newGrid, depth - 1, bestScore, beta)
           resScore = result.score
@@ -104,14 +104,16 @@ class AI {
           bestScore = resScore
           move.push(direction)
         }
-        if (bestScore > beta) {
-          let bestMove = move[parseInt(Math.random() * move.length)]
-          return {direction: bestMove, score: bestScore}
-        }
+        // if (bestScore > beta) {
+        //   let bestMove = move[parseInt(Math.random() * move.length)]
+        //   return {direction: bestMove, score: bestScore}
+        // }
       }
     } else {
-      bestScore = beta
+      // bestScore = beta
       let size = grid.size
+      let sam = 0
+      let times = 0
       for (let value in [2, 4]) {
         value = [2, 4][value]
         for (let y = 0; y < size; y++) {
@@ -122,15 +124,18 @@ class AI {
 
             newGrid.matrix[y][x] = value
             let {score: resScore} = this.search(true, newGrid, depth, alpha, bestScore)
-            if (resScore > bestScore) {
-              bestScore = resScore
-            }
-            if (bestScore < alpha) {
-              return {score: bestScore}
-            }
+            sam += resScore
+            times++
+            // if (resScore > bestScore) {
+            //   bestScore = resScore
+            // }
+            // if (bestScore < alpha) {
+            //   return {score: bestScore}
+            // }
           }
         }
       }
+      bestScore = sam / times
     }
 
     let bestMove = move[parseInt(Math.random() * move.length)]
@@ -221,7 +226,7 @@ class AI {
       }
     }
 
-    return Math.log(max) / Math.log(2)
+    return max
   }
 
   available(matrix) {

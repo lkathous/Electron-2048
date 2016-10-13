@@ -53,6 +53,11 @@ class GridModel {
   }
 
   slide(dirction, moveFn) {
+    let moved = this.doSlide(dirction, moveFn)
+    if (moved) this.createTile()
+  }
+
+  doSlide(dirction, moveFn) {
     let oldMatrixSeri = JSON.stringify(this.matrix)
     let start = 0
     let add = 1
@@ -77,12 +82,8 @@ class GridModel {
     }
 
     let matrixSeri = JSON.stringify(this.matrix)
-    if (oldMatrixSeri !== matrixSeri) {
-      this.createTile()
-      matrixSeri = JSON.stringify(this.matrix)
-      // this.debug()
+    if (oldMatrixSeri !== matrixSeri)
       return true
-    }
     return false
   }
 
