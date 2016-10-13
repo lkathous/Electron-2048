@@ -4,7 +4,7 @@ class AI {
     this.game = gameManager
     this.grid = gameManager.grid
     this.depth = 1
-    this.minSearchTime = 50
+    this.minSearchTime = 30
     this.run = false
 
     this.vectors = {
@@ -62,13 +62,27 @@ class AI {
     return best
   }
 
+  eval(matrix) {
+    let emptyCells = this.available(matrix)
+
+    let smoothWeight = 0.1,
+        mono2Weight  = 1.0,
+        emptyWeight  = 2.7,
+        maxWeight    = 1.0
+
+    return this.smoothness(matrix) * smoothWeight
+         + this.monotonicity(matrix) * mono2Weight
+         + Math.log(emptyCells) * emptyWeight
+         + this.maxValue(matrix) * maxWeight
+  };
+
   search(playerTurn, grid, depth, alpha, beta) {
     let move = []
     let bestScore = 0
 
     // the maxing player
     if (playerTurn) {
-      // baseScore = alpha
+      bestScore = alpha
       for (let direction in [0, 1, 2, 3]) {
         let newGrid = grid.clone()
 
@@ -79,9 +93,9 @@ class AI {
 
         let resScore
         if (depth == 0) {
-          resScore = newGrid.score
+          resScore = this.eval(grid.matrix)
         } else {
-          let result = this.search(false, newGrid, depth - 1, alpha, beta)
+          let result = this.search(false, newGrid, depth - 1, bestScore, beta)
           resScore = result.score
         }
         if (resScore >= bestScore) {
@@ -90,9 +104,13 @@ class AI {
           bestScore = resScore
           move.push(direction)
         }
+        if (bestScore > beta) {
+          let bestMove = move[parseInt(Math.random() * move.length)]
+          return {direction: bestMove, score: bestScore}
+        }
       }
     } else {
-      // baseScore = beta
+      bestScore = beta
       let size = grid.size
       for (let value in [2, 4]) {
         value = [2, 4][value]
@@ -103,9 +121,12 @@ class AI {
             if (tile) continue
 
             newGrid.matrix[y][x] = value
-            let {score: resScore} = this.search(true, newGrid, depth, alpha, beta)
+            let {score: resScore} = this.search(true, newGrid, depth, alpha, bestScore)
             if (resScore > bestScore) {
               bestScore = resScore
+            }
+            if (bestScore < alpha) {
+              return {score: bestScore}
             }
           }
         }
@@ -123,21 +144,20 @@ class AI {
     for (let x = 0; x < size; x++) {
       for (let y = 0; y < size; y++) {
         if (matrix[y][x]) {
-          let value = Math.log(matrix[x][y]) / Math.log(2)
+          let value = Math.log(matrix[y][x]) / Math.log(2)
           for (let direction in [3, 1]) {
             direction = [3, 1][direction]
-            let vector = vectors[direction]
-            let target = this.grid.findPosition(x, y, vector, []).next
+            let target = this.grid.findPosition(x, y, direction).next
 
             if (target) {
-              let targetValue = Math.log(target) / Math.log(2);
-              smoothness -= Math.abs(value - targetValue);
+              let targetValue = Math.log(matrix[target.y][target.x]) / Math.log(2)
+              smoothness -= Math.abs(value - targetValue)
             }
           }
         }
       }
     }
-    return smoothness;
+    return smoothness
   }
 
   monotonicity(matrix) {
@@ -173,19 +193,19 @@ class AI {
           next++;
         }
         if (next>=4) next--
-        let currentValue = matrix[y, current] ? Math.log(matrix[y, current]) / Math.log(2) : 0;
-        let nextValue = matrix[y, next] ? Math.log(matrix[y, next]) / Math.log(2) : 0;
+        let currentValue = matrix[y, current] ? Math.log(matrix[y, current]) / Math.log(2) : 0
+        let nextValue = matrix[y, next] ? Math.log(matrix[y, next]) / Math.log(2) : 0
         if (currentValue > nextValue) {
-          totals[2] += nextValue - currentValue;
+          totals[2] += nextValue - currentValue
         } else if (nextValue > currentValue) {
-          totals[3] += currentValue - nextValue;
+          totals[3] += currentValue - nextValue
         }
-        current = next;
-        next++;
+        current = next
+        next++
       }
     }
 
-    return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3]);
+    return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3])
   }
 
   maxValue(matrix) {

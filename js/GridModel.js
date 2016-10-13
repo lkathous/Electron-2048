@@ -69,7 +69,7 @@ class GridModel {
 
         if (value) {
           let target = this.findPosition(x, y, dirction)
-          let {position, value: _value} = this.move(x, y, value, target, exception)
+          let {position, value: _value} = this.move(x, y, target, exception)
           if (!_value) continue
           if (moveFn) moveFn(x, y, position.x, position.y, _value)
         }
