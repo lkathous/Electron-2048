@@ -50,11 +50,11 @@ class AI {
     let space
 
     do {
-      let newBest = this.search(true, this.grid, depth, -10000, 10000)
+      let newBest = this.search(true, this.grid, depth, -10000, 10000, [])
       best = newBest
       depth++
       space = (new Date()).getTime() - start
-      console.log(space);
+      // console.log(space);
     } while (space < this.minSearchTime && this.maxValue(this.grid.matrix) >= 128)
     // } while (false)
 
@@ -62,28 +62,41 @@ class AI {
     return best
   }
 
-  eval(matrix) {
+  eval(grid) {
+    let matrix = grid.matrix
+    let score = Math.log(grid.score - this.grid.score)
+
+    let smoothWeight = 0,
+        mono2Weight  = 0,
+        emptyWeight  = 0,
+        maxWeight    = 0
+
+    let smoothness = this.smoothness(matrix)
+    let monotonicity = this.monotonicity(matrix)
     let emptyCells = this.available(matrix)
+    let maxValue = this.maxValue(matrix)
 
-    let smoothWeight = 0.1,
-        mono2Weight  = 1.0,
-        emptyWeight  = 2.7,
-        maxWeight    = 1.0
+    // console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 空格数: ${emptyCells}, 最大值: ${maxValue}, 得分: ${score}`);
 
-    return this.smoothness(matrix) * smoothWeight
-         + this.monotonicity(matrix) * mono2Weight
-         + Math.log(emptyCells) * emptyWeight
-         + Math.log(this.maxValue(matrix)) / Math.log(2) * maxWeight
+    score += smoothness * smoothWeight
+         + monotonicity * mono2Weight
+         + emptyCells * emptyWeight
+         + maxValue * maxWeight
+
+
+    return score
   }
 
-  search(playerTurn, grid, depth, alpha, beta) {
+  search(playerTurn, grid, depth, alpha, beta, operation) {
     let move = []
     let bestScore = 0
 
     // the maxing player
     if (playerTurn) {
-      // bestScore = alpha
+      bestScore = alpha
       for (let direction in [0, 1, 2, 3]) {
+        let o = JSON.parse(JSON.stringify(operation))
+        o.push(this.dirc[direction])
         let newGrid = grid.clone()
 
         let moved = newGrid.doSlide(direction)
@@ -92,10 +105,13 @@ class AI {
 
         let resScore
         if (depth == 0) {
-          // resScore = this.eval(grid.matrix)
-          resScore = grid.score
+          // console.log(o);
+          resScore = this.eval(newGrid)
+          // this.grid.print(newGrid.matrix)
+          // resScore = grid.score
         } else {
-          let result = this.search(false, newGrid, depth - 1, bestScore, beta)
+
+          let result = this.search(false, newGrid, depth - 1, bestScore, beta, o)
           resScore = result.score
         }
         if (resScore >= bestScore) {
@@ -104,16 +120,16 @@ class AI {
           bestScore = resScore
           move.push(direction)
         }
-        // if (bestScore > beta) {
-        //   let bestMove = move[parseInt(Math.random() * move.length)]
-        //   return {direction: bestMove, score: bestScore}
-        // }
+        if (bestScore > beta) {
+          let bestMove = move[parseInt(Math.random() * move.length)]
+          return {direction: bestMove, score: bestScore}
+        }
       }
     } else {
-      // bestScore = beta
+      bestScore = beta
       let size = grid.size
       let sam = 0
-      let times = 0
+      // let times = 0
       for (let value in [2, 4]) {
         value = [2, 4][value]
         for (let y = 0; y < size; y++) {
@@ -123,19 +139,16 @@ class AI {
             if (tile) continue
 
             newGrid.matrix[y][x] = value
-            let {score: resScore} = this.search(true, newGrid, depth, alpha, bestScore)
-            sam += resScore
-            times++
-            // if (resScore > bestScore) {
-            //   bestScore = resScore
-            // }
-            // if (bestScore < alpha) {
-            //   return {score: bestScore}
-            // }
+            let {score: resScore} = this.search(true, newGrid, depth, alpha, bestScore, operation)
+            if (resScore > bestScore) {
+              bestScore = resScore
+            }
+            if (bestScore < alpha) {
+              return {score: bestScore}
+            }
           }
         }
       }
-      bestScore = sam / times
     }
 
     let bestMove = move[parseInt(Math.random() * move.length)]
@@ -143,6 +156,7 @@ class AI {
   }
 
   /* 得分算法 */
+  // 平滑度
   smoothness(matrix) {
     let smoothness = 0
     let size = matrix.length
@@ -165,6 +179,7 @@ class AI {
     return smoothness
   }
 
+  // 单调性
   monotonicity(matrix) {
     let totals = [0, 0, 0, 0]
 
@@ -213,6 +228,7 @@ class AI {
     return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3])
   }
 
+  // 最大数
   maxValue(matrix) {
     let size = matrix.length
     let max = 0
@@ -229,6 +245,7 @@ class AI {
     return max
   }
 
+  // 空数量
   available(matrix) {
     let size = matrix.length
     let num = 0

@@ -66,57 +66,23 @@ document.onkeydown = (e) => {
   game.slide(direction)
 }
 
-// 模拟操作部分
-let cancelAuto = false
-let keydown = code => {
-  CustomEvent = document.createEvent('HTMLEvents')
-  CustomEvent.initEvent('keydown', !1, !1)
-  CustomEvent.keyCode = code
-  document.dispatchEvent(CustomEvent)
-}
-
-let autoKeyDown = str => {
-  for (var i = 0; i < str.length; i++) {
-    let char = str.charAt(i)
-    switch(char) {
-      case "w":
-      case "0":
-        keydown(38)
-        break;
-      case "s":
-      case "1":
-        keydown(40)
-        break;
-      case "a":
-      case "2":
-        keydown(37)
-        break;
-      case "d":
-      case "3":
-        keydown(39)
-        break;
-    }
-  }
-}
-
 let shortKey = code => {
-  console.log("==== "+code);
-  cancelAuto = false
   switch(code) {
-    case 75:
-      autoRandom()
+    case 74:
+      // console.log("j");
+      game.grid.debug()
+      ai.execute()
+      console.log("debug");
       break;
-    case 80:
-      cancelAuto = true
+    case 75:
+      // console.log("k");
+      ai.start()
+      console.log("开始ai");
+      break;
+    case 76:
+      // console.log("l");
+      ai.stop()
+      console.log("停止ai");
       break;
   }
-}
-let autoRandom = () => {
-  if (cancelAuto) return
-  setTimeout(() => {
-    console.log("hehe");
-    let code = parseInt(Math.random() * 4)
-    autoKeyDown("sdsdsdsdsdsdsdsdsdsdsdsdsdsdas")
-    return autoRandom()
-  }, 100)
 }

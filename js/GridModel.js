@@ -179,10 +179,15 @@ class GridModel {
   }
 
   debug() {
+    this.print(this.matrix)
+  }
+
+  print(matrix) {
     let arr = []
-    for (var y = 0; y < this.size; y++) {
-      for (var x = 0; x < this.size; x++) {
-        let self = this.matrix[y][x]
+    let size = matrix.length
+    for (var y = 0; y < size; y++) {
+      for (var x = 0; x < size; x++) {
+        let self = matrix[y][x]
         if (!self) {
           arr.push("      ")
           continue
