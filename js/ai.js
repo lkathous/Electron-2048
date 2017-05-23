@@ -1,9 +1,9 @@
 // 游戏控制器
 class AI {
-  constructor(gameManager) {
-    this.game = gameManager
-    this.grid = gameManager.grid
-    this.depth = 1
+  constructor(GameManagement) {
+    this.game = GameManagement
+    this.grid = GameManagement.grid
+    this.baseDepth = 1
     this.minSearchTime = 30
     this.run = false
 
@@ -35,7 +35,7 @@ class AI {
     let move = ai.getBest()
     if (!move.direction || move.direction == -1) this.game.lose()
     this.game.slide(move.direction)
-    this.grid.debug()
+    // this.grid.debug()
 
     if (!this.run || !this.game.isStart) return
     setTimeout(() => {
@@ -45,7 +45,7 @@ class AI {
 
   getBest() {
     let start = (new Date()).getTime()
-    let depth = this.depth
+    let depth = this.baseDepth
     let best
     let space
 
@@ -55,39 +55,55 @@ class AI {
       depth++
       space = (new Date()).getTime() - start
       // console.log(space);
-    } while (space < this.minSearchTime && this.maxValue(this.grid.matrix) >= 128)
+    } while (space < this.minSearchTime && this.getMaxValue(this.grid.matrix) >= 128 && false) // TODO TEST
     // } while (false)
 
     console.log(`思考深度：${depth}，思考耗时：${space} 毫秒，方向：${this.dirc[best.direction]}，最高得分：${best.score}`);
     return best
   }
 
+  // 计算得分
   eval(grid) {
-    let matrix = grid.matrix
-    let score = Math.log(grid.score - this.grid.score)
+    if (this.game.debug) grid.debug()
 
-    let smoothWeight = 0,
-        mono2Weight  = 0,
-        emptyWeight  = 0,
-        maxWeight    = 0
+    if (grid.checkLose())
+      return Math.log(0)
+
+    let matrix = grid.matrix
+    // let score = Math.log(grid.score - this.grid.score)
+    let score = 0
+
+    let smoothWeight = 1,
+        mono2Weight  = 1,
+        // emptyWeight  = 2,
+        // maxValueWeight    = 2,
+        avgWeight    = 2
 
     let smoothness = this.smoothness(matrix)
     let monotonicity = this.monotonicity(matrix)
-    let emptyCells = this.available(matrix)
-    let maxValue = this.maxValue(matrix)
+    // let emptyCells = this.getExistsCount(matrix)
+    // let maxValue = this.getMaxValue(matrix)
+    let avgValue = this.getAvgValue(matrix)
 
-    // console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 空格数: ${emptyCells}, 最大值: ${maxValue}, 得分: ${score}`);
+    score += monotonicity * mono2Weight
+         + avgValue * avgWeight
 
-    score += smoothness * smoothWeight
-         + monotonicity * mono2Weight
-         + emptyCells * emptyWeight
-         + maxValue * maxWeight
-
-
+    if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 平均值: ${avgValue}, 得分: ${score}`);
     return score
   }
 
-  search(playerTurn, grid, depth, alpha, beta, operation) {
+  /**
+   * 极大极小搜索算法
+   *
+   * @param    {boolean}  playerTurn  玩家回合
+   * @param    {object}   grid        格局
+   * @param    {int}      depth       深度
+   * @param    {int}      alpha       阿尔法值
+   * @param    {int}      beta        贝塔值
+   * @param    {array}    operation   xx
+   * @returns  {object} {direction: 0, score: 0}
+   */
+  search(playerTurn, grid, depth, alpha, beta, o) {
     let move = []
     let bestScore = 0
 
@@ -95,25 +111,15 @@ class AI {
     if (playerTurn) {
       bestScore = alpha
       for (let direction in [0, 1, 2, 3]) {
-        let o = JSON.parse(JSON.stringify(operation))
-        o.push(this.dirc[direction])
-        let newGrid = grid.clone()
+        if (this.game.debug) console.log(`======== ${this.dirc[direction]}`);
 
+        let newGrid = grid.clone()
         let moved = newGrid.doSlide(direction)
 
-        if (!moved || newGrid.checkLose()) continue
+        // if (!moved || newGrid.checkLose()) continue
+        if (!moved) continue
 
-        let resScore
-        if (depth == 0) {
-          // console.log(o);
-          resScore = this.eval(newGrid)
-          // this.grid.print(newGrid.matrix)
-          // resScore = grid.score
-        } else {
-
-          let result = this.search(false, newGrid, depth - 1, bestScore, beta, o)
-          resScore = result.score
-        }
+        let {score: resScore} = this.search(false, newGrid, depth, bestScore, beta, o)
         if (resScore >= bestScore) {
           if (resScore > bestScore)
             move = []
@@ -121,8 +127,7 @@ class AI {
           move.push(direction)
         }
         if (bestScore > beta) {
-          let bestMove = move[parseInt(Math.random() * move.length)]
-          return {direction: bestMove, score: bestScore}
+          break
         }
       }
     } else {
@@ -139,8 +144,20 @@ class AI {
             if (tile) continue
 
             newGrid.matrix[y][x] = value
-            let {score: resScore} = this.search(true, newGrid, depth, alpha, bestScore, operation)
-            if (resScore > bestScore) {
+
+            let resScore = {}
+            if (depth <= 1) {
+              // console.log(o);
+              resScore = this.eval(newGrid)
+              // this.grid.print(newGrid.matrix)
+              // resScore = grid.score
+            } else {
+              let result = this.search(true, newGrid, depth - 1, alpha, bestScore, o)
+              resScore = result.score
+            }
+
+            // let {score: resScore} = this.search(true, newGrid, depth - 1, alpha, bestScore, operation)
+            if (resScore < bestScore) {
               bestScore = resScore
             }
             if (bestScore < alpha) {
@@ -176,10 +193,10 @@ class AI {
         }
       }
     }
-    return smoothness
+    return Math.abs(smoothness < 0 ? 0 : smoothness)
   }
 
-  // 单调性
+  // 计算单调性
   monotonicity(matrix) {
     let totals = [0, 0, 0, 0]
 
@@ -228,8 +245,8 @@ class AI {
     return Math.max(totals[0], totals[1]) + Math.max(totals[2], totals[3])
   }
 
-  // 最大数
-  maxValue(matrix) {
+  // 统计最大数字
+  getMaxValue(matrix) {
     let size = matrix.length
     let max = 0
     for (let x = 0; x < size; x++) {
@@ -245,19 +262,36 @@ class AI {
     return max
   }
 
-  // 空数量
-  available(matrix) {
+  // 统计空格子数量
+  getExistsCount(matrix) {
     let size = matrix.length
     let num = 0
     for (let x = 0; x < size; x++) {
       for (let y = 0; y < size; y++) {
-        if (!matrix[y][x]) {
+        if (matrix[y][x]) {
           num++
         }
       }
     }
 
     return num
+  }
+
+  // 统计平均点数
+  getAvgValue(matrix) {
+    let size = matrix.length
+    let num = 0
+    let total = 0
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (matrix[y][x]) {
+          num++
+          total += matrix[y][x]
+        }
+      }
+    }
+
+    return total / num
   }
 
 }

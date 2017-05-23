@@ -6,7 +6,7 @@ try {
 } catch (e) {}
 
 let viewActuator = new ViewActuator(4, document)
-let game = new GameManager(viewActuator)
+let game = new GameManagement(viewActuator)
 game.start()
 
 let ai = new AI(game)
@@ -29,7 +29,7 @@ let start = () => {
 }
 
 let test = () => {
-  game.reset()
+  game.testStart()
 }
 
 document.onkeydown = (e) => {
@@ -72,7 +72,7 @@ let shortKey = code => {
       // console.log("j");
       game.grid.debug()
       ai.execute()
-      console.log("debug");
+      console.log("=====================================");
       break;
     case 75:
       // console.log("k");

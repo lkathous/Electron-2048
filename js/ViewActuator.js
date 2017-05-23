@@ -11,7 +11,7 @@ class ViewActuator {
     this.tileIndex = 0
   }
 
-  initialize() {
+  initialize(matrix) {
     this.tileIndex = 0
     this.scoreP.innerHTML = 0
 
@@ -26,6 +26,11 @@ class ViewActuator {
 
         let left = 7 + space * j
         this.styleTag.innerHTML += ".tile[x=\""+ j +"\"][y=\""+ i +"\"] { top: "+ top +"px; left: "+ left +"px; }"
+
+        if (matrix[i][j]) {
+
+          this.createTile(j, i, matrix[i][j]) // TODO TEST
+        }
       }
     }
   }
