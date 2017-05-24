@@ -88,12 +88,16 @@ class GridModel {
   }
 
   findPosition(x, y, dirction) {
+    return this.findPositionInMatrix(this.matrix, x, y, dirction)
+  }
+
+  findPositionInMatrix(matrix, x, y, dirction) {
     let {x: dire_x, y: dire_y} = this.vectors[dirction]
     let _x = dire_x + x
     let _y = dire_y + y
     let _value
     try {
-      _value = this.matrix[_y][_x]
+      _value = matrix[_y][_x]
     } catch (e) {}
 
     if (_value) {
@@ -102,7 +106,7 @@ class GridModel {
         next: {x: _x, y: _y}
       }
     } else {
-      if (_value === null) return this.findPosition(_x, _y, dirction)
+      if (_value === null) return this.findPositionInMatrix(matrix, _x, _y, dirction)
     }
 
     return {position: {x, y}}

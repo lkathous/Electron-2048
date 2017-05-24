@@ -11,7 +11,6 @@ game.start()
 
 let ai = new AI(game)
 
-
 // 用户操作
 let closeWindow = () => {
   console.log('closeWindow')
@@ -30,6 +29,10 @@ let start = () => {
 
 let test = () => {
   game.testStart()
+}
+
+let aaa = (m) => {
+  return ai.smoothness2(m)
 }
 
 document.onkeydown = (e) => {

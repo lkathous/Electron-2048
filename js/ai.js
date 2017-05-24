@@ -58,7 +58,7 @@ class AI {
     } while (space < this.minSearchTime && this.getMaxValue(this.grid.matrix) >= 128 && false) // TODO TEST
     // } while (false)
 
-    console.log(`思考深度：${depth}，思考耗时：${space} 毫秒，方向：${this.dirc[best.direction]}，最高得分：${best.score}`);
+    console.log(`思考深度：${depth - 1}，思考耗时：${space} 毫秒，方向：${this.dirc[best.direction]}，最高得分：${best.score}`);
     return best
   }
 
@@ -79,14 +79,15 @@ class AI {
         // maxValueWeight    = 2,
         avgWeight    = 2
 
-    let smoothness = this.smoothness(matrix)
+    let smoothness = this.smoothness2(matrix)
     let monotonicity = this.monotonicity(matrix)
     // let emptyCells = this.getExistsCount(matrix)
     // let maxValue = this.getMaxValue(matrix)
     let avgValue = this.getAvgValue(matrix)
 
-    score += monotonicity * mono2Weight
-         + avgValue * avgWeight
+    score += smoothness * smoothWeight
+        + monotonicity * mono2Weight
+        + avgValue * avgWeight
 
     if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 平均值: ${avgValue}, 得分: ${score}`);
     return score
@@ -194,6 +195,38 @@ class AI {
       }
     }
     return Math.abs(smoothness < 0 ? 0 : smoothness)
+  }
+  smoothness2(matrix) {
+    let count = 0
+    let differentTotal = 0
+    let maxValue = 0
+
+    let size = matrix.length
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (matrix[y][x]) {
+          let value = matrix[y][x]
+          if (value > maxValue) {
+            maxValue = value
+          }
+
+          for (let direction in [3, 1]) {
+            direction = [3, 1][direction]
+            let target = this.grid.findPositionInMatrix(matrix, x, y, direction).next
+
+            if (target) {
+              let targetValue = matrix[target.y][target.x]
+              differentTotal += Math.abs(value - targetValue)
+              count++
+            }
+          }
+        }
+      }
+    }
+
+    if (count == 0 ) return 0
+
+    return 1 / (differentTotal / count / maxValue)
   }
 
   // 计算单调性
