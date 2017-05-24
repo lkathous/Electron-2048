@@ -74,22 +74,22 @@ class AI {
     let score = 0
 
     let smoothWeight = 1,
-        mono2Weight  = 1,
+        mono2Weight = 1,
         // emptyWeight  = 2,
         // maxValueWeight    = 2,
-        avgWeight    = 2
+        valueDensityWeight = 50
 
     let smoothness = this.smoothness2(matrix)
     let monotonicity = this.monotonicity(matrix)
     // let emptyCells = this.getExistsCount(matrix)
     // let maxValue = this.getMaxValue(matrix)
-    let avgValue = this.getAvgValue(matrix)
+    let valueDensity = this.getAvgValue(matrix) / this.getMaxValue(matrix)
 
     score += smoothness * smoothWeight
         + monotonicity * mono2Weight
-        + avgValue * avgWeight
+        + valueDensity * valueDensityWeight
 
-    if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 平均值: ${avgValue}, 得分: ${score}`);
+    if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 密度值: ${valueDensity}, 得分: ${score}`);
     return score
   }
 
