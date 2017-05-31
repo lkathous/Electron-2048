@@ -35,7 +35,7 @@ class AI {
     let move = ai.getBest()
     if (!move.direction || move.direction == -1) this.game.lose()
     this.game.slide(move.direction)
-    // this.grid.debug()
+    this.grid.debug()
 
     if (!this.run || !this.game.isStart) return
     setTimeout(() => {
@@ -73,23 +73,21 @@ class AI {
     // let score = Math.log(grid.score - this.grid.score)
     let score = 0
 
-    let smoothWeight = 1,
+    let smoothWeight = 2,
         mono2Weight = 1,
         // emptyWeight  = 2,
         // maxValueWeight    = 2,
-        valueDensityWeight = 50
+        valueDensityWeight = 1
 
-    let smoothness = this.smoothness2(matrix)
-    let monotonicity = this.monotonicity(matrix)
+    let smoothness = this.smoothness2(matrix)* smoothWeight
+    let monotonicity = this.monotonicity(matrix) * mono2Weight
     // let emptyCells = this.getExistsCount(matrix)
-    // let maxValue = this.getMaxValue(matrix)
-    let valueDensity = this.getAvgValue(matrix) / this.getMaxValue(matrix)
+    let maxValue = this.getMaxValue(matrix)
+    let valueDensity = this.getValueDensity(matrix) * valueDensityWeight
 
-    score += smoothness * smoothWeight
-        + monotonicity * mono2Weight
-        + valueDensity * valueDensityWeight
+    score += smoothness + monotonicity + valueDensity
 
-    if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 密度值: ${valueDensity}, 得分: ${score}`);
+    if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 密度值: ${valueDensity}, 最大值: ${maxValue}, 得分: ${score}`);
     return score
   }
 
@@ -199,16 +197,12 @@ class AI {
   smoothness2(matrix) {
     let count = 0
     let differentTotal = 0
-    let maxValue = 0
 
     let size = matrix.length
     for (let x = 0; x < size; x++) {
       for (let y = 0; y < size; y++) {
         if (matrix[y][x]) {
           let value = matrix[y][x]
-          if (value > maxValue) {
-            maxValue = value
-          }
 
           for (let direction in [3, 1]) {
             direction = [3, 1][direction]
@@ -216,7 +210,7 @@ class AI {
 
             if (target) {
               let targetValue = matrix[target.y][target.x]
-              differentTotal += Math.abs(value - targetValue)
+              differentTotal += Math.pow(Math.abs(Math.log2(value) - Math.log2(targetValue)), 3)
               count++
             }
           }
@@ -226,7 +220,7 @@ class AI {
 
     if (count == 0 ) return 0
 
-    return 1 / (differentTotal / count / maxValue)
+    return 1 / (differentTotal / count)
   }
 
   // 计算单调性
@@ -310,8 +304,8 @@ class AI {
     return num
   }
 
-  // 统计平均点数
-  getAvgValue(matrix) {
+  // 统计密度
+  getValueDensity(matrix) {
     let size = matrix.length
     let num = 0
     let total = 0
@@ -319,7 +313,7 @@ class AI {
       for (let y = 0; y < size; y++) {
         if (matrix[y][x]) {
           num++
-          total += matrix[y][x]
+          total += Math.pow(Math.log2(matrix[y][x]), 2)
         }
       }
     }

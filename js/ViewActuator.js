@@ -28,8 +28,7 @@ class ViewActuator {
         this.styleTag.innerHTML += ".tile[x=\""+ j +"\"][y=\""+ i +"\"] { top: "+ top +"px; left: "+ left +"px; }"
 
         if (matrix[i][j]) {
-
-          this.createTile(j, i, matrix[i][j]) // TODO TEST
+          this.createTile(j, i, matrix[i][j])
         }
       }
     }

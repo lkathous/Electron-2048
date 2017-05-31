@@ -28,7 +28,13 @@ let start = () => {
 }
 
 let test = () => {
-  game.testStart()
+  matrix = [
+    [2, null, null, 2],
+    [null, null, 4, 4],
+    [null, null, 8, 8],
+    [8, 16, 32, 8]
+  ] // TODO TEST
+  game.testStart(matrix)
 }
 
 let aaa = (m) => {

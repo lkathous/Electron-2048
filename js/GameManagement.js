@@ -27,17 +27,14 @@ class GameManagement {
       this.grid.createTile()
     } , 0)
   }
-  testStart() {
+
+  testStart(matrix) {
     this.isStart = true
     this.debug = true
 
     this.grid.initialize()
-    this.grid.matrix = [
-      [4, 16, 4, 2],
-      [2, 8, null, null],
-      [null, 8, null, null],
-      [null, 2, null, null]
-    ] // TODO TEST
+    this.grid.matrix = matrix
+    
     this.grid.debug()
     this.viewActuator.initialize(this.grid.matrix)
 
