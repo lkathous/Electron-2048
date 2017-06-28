@@ -23,6 +23,9 @@ class AI {
   }
 
   start() {
+    if (this.run) {
+      return
+    }
     this.run = true
     this.execute()
   }
@@ -56,7 +59,6 @@ class AI {
       space = (new Date()).getTime() - start
       // console.log(space);
     } while (space < this.minSearchTime && this.getMaxValue(this.grid.matrix) >= 128 && false) // TODO TEST
-    // } while (false)
 
     console.log(`思考深度：${depth - 1}，思考耗时：${space} 毫秒，方向：${this.dirc[best.direction]}，最高得分：${best.score}`);
     return best
@@ -71,28 +73,33 @@ class AI {
 
     let matrix = grid.matrix
     // let score = Math.log(grid.score - this.grid.score)
-    let score = 0
+    let score = this.evalMatrix(matrix)
+    return score
+  }
 
-    let smoothWeight = 2,
-        mono2Weight = 1,
+  evalMatrix(matrix) {
+
+    let smoothWeight = -1,
+        mono2Weight = 0,
         // emptyWeight  = 2,
-        // maxValueWeight    = 2,
+        maxValueWeight = 0,
         valueDensityWeight = 1
 
-    let smoothness = this.smoothness2(matrix)* smoothWeight
+    let smoothness = this.smoothness2(matrix) * smoothWeight
     let monotonicity = this.monotonicity(matrix) * mono2Weight
-    // let emptyCells = this.getExistsCount(matrix)
-    let maxValue = this.getMaxValue(matrix)
+    let emptyCells = this.getExistsCount(matrix)
+    let maxValue = this.getMaxValue(matrix) * maxValueWeight
     let valueDensity = this.getValueDensity(matrix) * valueDensityWeight
 
-    score += smoothness + monotonicity + valueDensity
+    let score = smoothness + monotonicity + valueDensity
 
-    if (this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 密度值: ${valueDensity}, 最大值: ${maxValue}, 得分: ${score}`);
+    // console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 密度值: ${valueDensity}, 最大值: ${maxValue}, 得分: ${score}`);
+    if (!this.game || this.game.debug) console.log(`平滑度: ${smoothness}, 单调性: ${monotonicity}, 密度值: ${valueDensity}, 最大值: ${maxValue}, 得分: ${score}`);
     return score
   }
 
   /**
-   * 极大极小搜索算法
+   * 阿尔法贝塔剪枝搜索算法
    *
    * @param    {boolean}  playerTurn  玩家回合
    * @param    {object}   grid        格局
@@ -201,8 +208,8 @@ class AI {
     let size = matrix.length
     for (let x = 0; x < size; x++) {
       for (let y = 0; y < size; y++) {
-        if (matrix[y][x]) {
-          let value = matrix[y][x]
+        let value = matrix[y][x]
+        if (value) {
 
           for (let direction in [3, 1]) {
             direction = [3, 1][direction]
@@ -210,17 +217,16 @@ class AI {
 
             if (target) {
               let targetValue = matrix[target.y][target.x]
-              differentTotal += Math.pow(Math.abs(Math.log2(value) - Math.log2(targetValue)), 3)
+              let different = Math.abs(value - targetValue)
+              differentTotal += Math.pow(different, 2)
               count++
             }
           }
         }
       }
     }
-
-    if (count == 0 ) return 0
-
-    return 1 / (differentTotal / count)
+    if (count == 0) return 0
+    return Math.pow(differentTotal / count, 0.5)
   }
 
   // 计算单调性
@@ -289,7 +295,7 @@ class AI {
     return max
   }
 
-  // 统计空格子数量
+  // 统计非空格子数量
   getExistsCount(matrix) {
     let size = matrix.length
     let num = 0
@@ -300,7 +306,6 @@ class AI {
         }
       }
     }
-
     return num
   }
 
@@ -313,7 +318,7 @@ class AI {
       for (let y = 0; y < size; y++) {
         if (matrix[y][x]) {
           num++
-          total += Math.pow(Math.log2(matrix[y][x]), 2)
+          total += Math.pow(matrix[y][x], 2)
         }
       }
     }

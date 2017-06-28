@@ -27,18 +27,33 @@ let start = () => {
   game.start()
 }
 
-let test = () => {
-  matrix = [
-    [2, null, null, 2],
-    [null, null, 4, 4],
-    [null, null, 8, 8],
-    [8, 16, 32, 8]
-  ] // TODO TEST
-  game.testStart(matrix)
+// 将局面更新为matrix，并开启测试
+let test = (matrixStr) => {
+  if (!matrixStr) {
+    matrixStr = "2 0 0 2, 0 0 4 4, 0 0 8 8, 8 16 32 8"
+  }
+
+  game.testStart(buildM(matrixStr))
 }
 
-let aaa = (m) => {
-  return ai.smoothness2(m)
+// 输入字符串"0 2 0 0, 0 4 0 0, 2 2 0 0, 0 0 0 0"，得到对应matrix二维数组
+let buildM = (m) => {
+  let matrix = []
+  let rows = m.split(", ")
+  rows.forEach(row => {
+    let nums = row.split(" ")
+    let arr = []
+    nums.forEach(num => {
+      if (num == 0) {
+        arr.push(null)
+      } else {
+        arr.push(parseInt(num))
+      }
+    })
+    matrix.push(arr)
+  })
+
+  return matrix
 }
 
 document.onkeydown = (e) => {
@@ -87,11 +102,13 @@ let shortKey = code => {
       // console.log("k");
       ai.start()
       console.log("开始ai");
+      document.querySelector(".toolbar .t-left").innerHTML = "lk` (自动游戏)"
       break;
     case 76:
       // console.log("l");
       ai.stop()
       console.log("停止ai");
+      document.querySelector(".toolbar .t-left").innerHTML = "lk`"
       break;
   }
 }
